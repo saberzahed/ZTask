@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace ZTask
-{ public sealed class FactoryTask
+{
+    public sealed class FactoryTask
     {
         private FactoryTask()
         {
-                
         }
 
         internal static FactoryTask CreateInstance()
@@ -13,25 +14,25 @@ namespace ZTask
             return new FactoryTask();
         }
 
-        public IntervalJob StartNew(Action execution, TimeSpan interval)
+      
+        public IntervalJob StartNew(Action execution, TimeSpan interval,Action executionBeforeStart=null, Action executionAfterStop = null)
         {
-            var task = new IntervalJob(execution, interval);
+            var executionAfterStopTask = executionAfterStop is null ? null : new Task(executionAfterStop);
+            var task = new IntervalJob(execution,executionBeforeStart,executionAfterStopTask , interval);
             task.Start();
             return task;
         }
 
-        public IntervalJob StartNew(Action execution, int second)
+        public IntervalJob StartNew(Action execution, int second,Action executionBeforeStart=null, Action executionAfterStop = null) =>
+            StartNew(execution, TimeSpan.FromSeconds(second),executionBeforeStart, executionAfterStop);
+
+        public IntervalJob New(Action execution, TimeSpan interval,Action executionBeforeStart=null, Action executionAfterStop = null)
         {
-            var task = new IntervalJob(execution, TimeSpan.FromSeconds(second));
-            task.Start();
-            return task;
+            var executionAfterStopTask = executionAfterStop is null ? null : new Task(executionAfterStop);
+            return new IntervalJob(execution, executionBeforeStart,executionAfterStopTask, interval);
         }
 
-        public IntervalJob New(Action execution, TimeSpan interval) =>
-            new IntervalJob(execution, interval);
-
-        public IntervalJob New(Action execution, int second) =>
-            new IntervalJob(execution, TimeSpan.FromSeconds(second));
+        public IntervalJob New(Action execution, int second,Action executionBeforeStart=null, Action executionAfterStop=null) =>
+             New(execution,TimeSpan.FromSeconds(second),executionBeforeStart, executionAfterStop);
     }
-  
 }
